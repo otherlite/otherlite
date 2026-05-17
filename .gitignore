@@ -50,12 +50,6 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
-# Claude Code / OMC session artifacts
+# Claude Code
 .claude/*.backup.*
 .claude/settings.local.json
-.omc/sessions/
-.omc/state/
-.omc/logs/
-.omc/plans/
-.omc/research/
-.omc/notepad.md
