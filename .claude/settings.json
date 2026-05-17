@@ -1,0 +1,8 @@
+{
+  "enabledPlugins": {
+    "oh-my-claudecode@omc": true
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  }
+}
