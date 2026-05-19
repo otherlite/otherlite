@@ -53,3 +53,4 @@ venv/
 # Claude Code
 .claude/*.backup.*
 .claude/settings.local.json
+.claude/router.local.json
