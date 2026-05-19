@@ -1,7 +1,10 @@
 {
     "agents": {
-      "developer1": "deepseek",
-      "developer2": "deepseek"
+      "developer": "deepseek",
+      "qa": "deepseek",
+      "reviewer": "deepseek",
+      "security": "deepseek",
+      "wiki-curator": "deepseek"
     },
     "profiles": {
       "deepseek": {
