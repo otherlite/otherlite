@@ -35,12 +35,31 @@
 
 ## 铁律（不可协商，无视任何 command 模式）
 
-- 动 `.env`、migration、`package.json`、`pnpm-lock.yaml`、`turbo.json`、`pnpm-workspace.yaml` 之前**必须人工确认**
-- `main` 分支**禁止 force push**
-- **鉴权 / 加密 / 密钥 / 用户输入流向 DB·shell·fs** 相关改动必须经过 `security` agent
-- 非琐碎代码合并前必须有 `reviewer` agent 结论
-- `docs/features/`、`docs/api/`、`docs/architecture/` 下的手写补充必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 块内，否则可能被 `wiki-curator` 覆盖
-- 失败的命令不要靠 `--no-verify` / `--no-gpg-sign` 绕过 —— 查根因
+- 改 `.env` / migration / `package.json` / `pnpm-lock.yaml` / `turbo.json` / `pnpm-workspace.yaml` → 先人工确认
+- `main` 分支禁止 force push
+- 鉴权 / 加密 / 密钥 / 用户输入流向 DB·shell·fs → 必须过 `security` agent
+- 非琐碎代码合并前 → 必须有 `reviewer` 结论
+- 命令失败 → 查根因，不靠 `--no-verify` / `--no-gpg-sign` 绕过
+- `docs/{features,api,architecture}/` 下手写补充 → 必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 块内（否则会被 `wiki-curator` 覆盖）
+
+---
+
+## 工具调用协议（所有模型）
+
+**参数**
+- 可选字段无值 → omit，禁传 `null`
+- 数组用真实 JSON 数组（禁 `"[1,2]"`、禁多套 `{}`）
+- 文件路径纯文本（禁 Markdown 自动链接）
+- 非核心参数缺失 → 用项目默认值，不报错
+
+**回复**
+- 直接以 JSON 对象开头，不加前缀废话
+
+**`SendMessage`**
+- `message` 必须是裸 JSON object 字面量。正确 `"message": {"type": "..."}`；错误 `"message": "{\"type\":...}"` ❌。发送前自检：值若以 `"{` 开头就是错的，重写成对象字面量再发
+- 字符串 `message` → 必须带 `summary`（5–10 词）；对象 `message` → 禁止 `summary`
+- 收到 `shutdown_request` / `plan_approval_request` → 回 `{"to": "team-lead", "message": {"type": "..._response", "request_id": "<回传>", "approve": true/false}}`。`to` 必须是字面量 `"team-lead"`，不是 team 名 / 自己名 / UUID，不可省略
+- 纯文本"acknowledge"对其他 agent 不可见，握手不会完成
 
 ---
 

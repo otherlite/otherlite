@@ -93,15 +93,15 @@ function isProbe(argv) {
   return argv.includes("--print") && !argv.some((a) => !a.startsWith("-"));
 }
 
-function resolveProfileName(config, agentName) {
+function resolveProfileName(config, agentType) {
   if (process.env.CLAUDE_ROUTER_PROFILE) {
     return { name: process.env.CLAUDE_ROUTER_PROFILE, source: "CLAUDE_ROUTER_PROFILE env" };
   }
-  if (agentName && config.agents && config.agents[agentName]) {
-    return { name: config.agents[agentName], source: `agents["${agentName}"]` };
+  if (agentType && config.agents && config.agents[agentType]) {
+    return { name: config.agents[agentType], source: `agents["${agentType}"]` };
   }
-  if (agentName && config.profiles && config.profiles[agentName]) {
-    return { name: agentName, source: `profiles["${agentName}"] (agent name match)` };
+  if (agentType && config.profiles && config.profiles[agentType]) {
+    return { name: agentType, source: `profiles["${agentType}"] (agent type match)` };
   }
   return null;
 }
@@ -121,10 +121,10 @@ function loadSelection(argv) {
     return null;
   }
 
-  const agentName = parseFlag(argv, "--agent-name");
-  const resolved = resolveProfileName(config, agentName);
+  const agentType = parseFlag(argv, "--agent-type");
+  const resolved = resolveProfileName(config, agentType);
   if (!resolved) {
-    debug(`no profile resolved (agent="${agentName ?? ""}") — passing through`);
+    debug(`no profile resolved (agent-type="${agentType ?? ""}") — passing through`);
     return null;
   }
 
@@ -136,7 +136,7 @@ function loadSelection(argv) {
 
   return {
     configPath,
-    agentName,
+    agentType,
     profileName: resolved.name,
     profileSource: resolved.source,
     env: { ...profile, ...loadSecrets(path.dirname(configPath), resolved.name) },
@@ -147,6 +147,10 @@ function main() {
   const argv = process.argv.slice(2);
 
   if (isProbe(argv)) process.exit(0);
+
+  const agentName = parseFlag(argv, "--agent-name");
+  const agentType = parseFlag(argv, "--agent-type");
+  log(`invoked agent="${agentName ?? "(none)"}" type="${agentType ?? "(none)"}" args=[${argv.join(", ")}]`);
 
   const realClaude = resolveRealClaude();
   if (!realClaude || !fs.existsSync(realClaude)) {
@@ -163,7 +167,7 @@ function main() {
       env[k] = v;
     }
     debug(
-      `agent="${selection.agentName}" -> profile "${selection.profileName}" (${selection.profileSource}); injected: ${Object.keys(selection.env).join(", ")}`,
+      `agent-type="${selection.agentType}" -> profile "${selection.profileName}" (${selection.profileSource}); injected: ${Object.keys(selection.env).join(", ")}`,
     );
   }
 
