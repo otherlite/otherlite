@@ -158,19 +158,6 @@ gate.pass ⇔
 6. **iteration 字段由主会话注入**，agent 不自行决定。
 7. **artifact_path 必须与实际落盘路径一致**。Agent 落盘后自检。
 
-## 无 slug 场景（`/fix`）
-
-`/fix` 不落 `docs/specs/{slug}/`。此时：
-
-- `task_slug` = `null`
-- `artifact_path` = `null`
-- `iteration` = `0`
-- 其他字段（`agent` / `verdict` / `blockers` / `needs_iteration` / `summary` / `created_at`）仍必填
-- agent 不落盘产物文件（没 frontmatter），只返回 JSON 给主会话
-- developer 仍需要落代码改动，但不写 `implementation.md`
-
-`/fix` 的 gate 判定与 `/ulw` 相同（基于 reviewer/security 的 verdict）。
-
 ## Agent 之间不直接通信
 
 所有跨 agent 协作经主会话中转。agent 发现需要其他 agent 的产物 → 在 `blockers` 里说明 → 主会话决策。**禁止使用 `SendMessage` 在 teammate 之间直接传 verdict 或 blockers**（HITL 哲学要求用户可见所有关键决策）。

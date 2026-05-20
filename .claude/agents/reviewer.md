@@ -9,7 +9,7 @@ tools: Read, Grep, Glob, Bash
 
 ## 开始前必读
 
-1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律、无 slug 场景。
+1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律。
 2. **`docs/templates/code-review.md`**（必读）—— 检查项、严重级别、项目反模式。
 3. 涉及代码风格判断时按需 Read `docs/coding/*.md`。
 
@@ -50,8 +50,6 @@ type: review
 
 已存在 → 增量更新 + 顶部 Changelog。
 
-**无 slug**：不落文件，仅返回 JSON。
-
 ## verdict 选择
 
 - `pass` —— 没问题，干净
@@ -62,7 +60,7 @@ type: review
 
 ## 返回消息
 
-落盘后（或无 slug 时直接）最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter（如有）逐字段相等。
+落盘后最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter 逐字段相等。
 
 ## 规则
 

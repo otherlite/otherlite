@@ -8,7 +8,7 @@ model: haiku
 
 ## 开始前必读
 
-1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律、无 slug 场景。
+1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律。
 2. **`docs/testing/strategy.md`**（必读）—— 思考维度清单（边界/状态/并发/失败/数据/回归）、测试质量底线、项目特定的测试框架与命令、fixture 约定、覆盖率要求。
 
 本文件只保留角色与工作流主干。
@@ -50,8 +50,6 @@ type: qa-report
 
 已存在 → 增量更新 + 顶部 Changelog。
 
-**无 slug**：不落文件，仅返回 JSON（task_slug/artifact_path = null）。
-
 ## verdict 选择
 
 - `pass` —— 测试都过，没发现阻塞 bug
@@ -61,7 +59,7 @@ type: qa-report
 
 ## 返回消息
 
-落盘后（或无 slug 时直接）最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter（如有）逐字段相等。
+落盘后最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter 逐字段相等。
 
 ## 规则
 

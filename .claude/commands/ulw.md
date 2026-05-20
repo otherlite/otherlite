@@ -1,26 +1,32 @@
 ---
-description: 全链路 pipeline —— analyst → architect → developer → qa → security + reviewer → wiki-curator；启动时选 hitl 或 autopilot 模式
+description: 全链路 pipeline —— analyst → architect → developer → qa → review → wiki-curator；启动选 mode
 ---
 
 按"全链路 pipeline"模式处理用户请求：`$ARGUMENTS`
 
 ## 启动
 
-解析 `$ARGUMENTS`，同时拿 **mode** 和 **slug/描述**，缺啥问啥，全确定后再开跑。
+### 1. 解析 slug
 
-**mode 判定**：
-- 含 `--auto` / `autopilot` 关键词 → `mode = autopilot`
-- 含 `--hitl` 关键词 → `mode = hitl`
-- 否则问用户：
-  - **hitl** —— 三道 HITL 关卡（analyst / architect / wiki），适合需求或方案还有犹豫
-  - **autopilot** —— 跳过所有 HITL，强制中断红线照常；适合需求已清晰、想一路跑到底
+- **空** → 列 `docs/specs/` 下所有子目录（按 mtime 倒序，每项显示 slug + 已有产出 `requirements.md` / `design.md` / `implementation.md` / `qa-report.md` / `review.md` / `security.md` / `wiki-report.md` 是否存在）让用户选。用户说"新建" → 问新描述。**不要自己挑**。
+- **已是 slug 形式**（如 `tiered-pricing-2026-05-17`）且 `docs/specs/{slug}/` 存在 → 直接复用（agent 各自负责"文件已存在 → 增量更新 + Changelog"）。
+- **是新描述** → 自动生成 `{kebab-case-描述}-{YYYY-MM-DD}`。若 slug 已存在则提示是否复用或换名。
 
-**slug / 起点判定**：
-- **空 / 仅模式关键词** → 列 `docs/specs/` 下所有子目录（按 mtime 倒序，每项显示 slug + 已有产出 `requirements.md` / `design.md` / `implementation.md` 是否存在）让用户选。用户说"新建" → 问新描述。**不要自己挑**。
-- **已是 slug 形式**（如 `/ulw tiered-pricing-2026-05-17 --auto`）且 `docs/specs/{slug}/` 存在 → 直接复用，从**最早缺失的产出文件**开始（`requirements.md` 已有但 `design.md` 没有 → 跳过 analyst，从 architect 开始）。
-- **是新描述** → 自动生成 `{kebab-case-描述}-{YYYY-MM-DD}`，从 analyst 开始。若 slug 已存在则提示是否复用或换名。
+### 2. 选 mode
 
-mode + slug + 起点都定下后，**第一句话**告知用户：`mode = {mode}`，起点 = `{节点名}`，产物落在 `docs/specs/{slug}/`。
+lead 用 `AskUserQuestion` 问一个问题：
+
+**mode**：`hitl`（每个产物节点等用户"通过"）/ `autopilot`（无 HITL，强制中断红线照常）
+
+### 3. 报告执行计划
+
+第一句话告诉用户：
+```
+mode = {mode}
+产物 → docs/specs/{slug}/
+```
+
+Pipeline 固定跑全程：analyst → architect → developer → qa → review → wiki-curator。Bug 修复也走需求分析 —— analyst 会快速产出极简 requirements.md（"修 X bug，无新需求"也算合法产出）。
 
 ## 调用机制
 
@@ -30,7 +36,7 @@ teammate 不跨 session 存活；所有产出**必须**落到 `docs/specs/{slug}
 
 ## Pipeline
 
-主会话按以下节点调度。所有 agent 输入/输出遵循 `docs/templates/agent-contract.md`。`[if hitl]` 标记的子项仅在 `mode = hitl` 生效。
+主会话按以下节点调度。所有 agent 输入/输出遵循 `docs/templates/agent-contract.md`。`[if hitl]` 标记的子项仅在 `mode = hitl` 生效。Pipeline 固定全跑，不支持跳过；slug 复用时各 agent 自行处理"文件已存在 → 增量更新 + Changelog"。
 
 1. **analyst** → `requirements.md`
    - HITL [if hitl]: 等用户"通过"
@@ -74,13 +80,14 @@ teammate 不跨 session 存活；所有产出**必须**落到 `docs/specs/{slug}
      - **security 完整结论** + severity_breakdown（Critical/High 全文，Medium/Low 计数）
      - **reviewer 完整结论**（阻塞 / 应该修 / 建议 分组）
      - **wiki 改动清单**（wiki_changes.{modified, created, skipped}）
+   - 汇报结束后 `TeamDelete`
 
 ## HITL 纪律（mode = hitl 时生效）
 
 - 节点 1、2、7 必须等用户**显式"通过"**才能进下一步
 - 用户只补细节没说通过 → 让对应 agent 更新文件后**再问一次**
 - 节点 3、4 不设关卡；节点 5 完成后向用户汇报但不阻塞 gate
-- 节点 7 用户可选"暂停"跳过 wiki 更新
+- 节点 7 用户可选"暂停"跳过 wiki 更新（其余节点已固定全跑）
 
 ## 强制中断（无视模式）
 

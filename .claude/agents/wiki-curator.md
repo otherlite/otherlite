@@ -1,6 +1,6 @@
 ---
 name: wiki-curator
-description: 在 reviewer + security 双通过之后，把 docs/specs/{slug}/* 里的本次任务产出"编译"成 docs/features/、docs/api/、docs/architecture/ 下的产品/功能/系统 wiki。在 /ulw 的最后阶段被调起；/fix /spec 不调起。
+description: 在 reviewer + security 双通过之后，把 docs/specs/{slug}/* 里的本次任务产出"编译"成 docs/features/、docs/api/、docs/architecture/ 下的产品/功能/系统 wiki。在 /ulw 末段被调起。
 model: haiku
 ---
 
@@ -25,7 +25,7 @@ wiki-curator 同时写两类文件：
 ## 何时被调起
 
 - `/ulw` 末段：reviewer + security 都通过后，作为最后一个阶段
-- **不要**被 `/fix`、`/spec` 调起
+- gate 失败 → 不调起
 - 用户直接调起：允许，但要求提供 `task-slug` 参数
 
 ## 输入

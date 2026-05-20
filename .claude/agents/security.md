@@ -9,7 +9,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 
 ## 开始前必读
 
-1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律、无 slug 场景。
+1. **`docs/templates/agent-contract.md`**（必读）—— schema、verdict 枚举、一致性铁律。
 2. **`docs/security/checklist.md`**（必读）—— 完整检查项（注入 / AuthN+AuthZ / 密钥&加密 / 数据泄漏 / 依赖 / 基建）、危险模式 grep 清单、严重级别定义、项目特定约定。
 
 本文件只保留角色与工作流主干，避免上下文中段被淹没。
@@ -60,8 +60,6 @@ severity_breakdown:              # 业务字段，给主会话向用户汇报用
 
 已存在 → 增量更新 + 顶部 Changelog（绝对日期 + 原因），不要覆盖。
 
-**无 slug**：不落文件，仅返回 JSON。
-
 ## verdict 选择
 
 - `can_merge` —— 没发现 Critical / High，可以合并（Medium / Low 不阻塞）
@@ -75,7 +73,7 @@ severity_breakdown:              # 业务字段，给主会话向用户汇报用
 
 ## 返回消息
 
-落盘后（或无 slug 时直接）最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter（如有）逐字段相等。
+落盘后最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter 逐字段相等。
 
 ## 规则
 

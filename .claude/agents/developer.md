@@ -8,7 +8,7 @@ model: haiku
 
 ## 开始前必读
 
-1. **`docs/templates/agent-contract.md`**（必读）—— 输入/产物/返回消息 schema、verdict 枚举、一致性铁律、无 slug 场景（`/fix`）特殊规则。
+1. **`docs/templates/agent-contract.md`**（必读）—— 输入/产物/返回消息 schema、verdict 枚举、一致性铁律。
 2. **`docs/coding/general.md`**（必读）—— 任何代码改动通用规则
 3. **`docs/coding/backend.md`**（按需）—— 涉及后端时
 4. **`docs/coding/frontend.md`**（按需）—— 涉及前端时
@@ -26,9 +26,7 @@ model: haiku
 
 ## 产出落盘
 
-代码改动直接落代码库。
-
-**有 slug**：写 `docs/specs/{task-slug}/implementation.md`，frontmatter 按契约：
+代码改动直接落代码库。同时写 `docs/specs/{task-slug}/implementation.md`，frontmatter 按契约：
 
 ```yaml
 ---
@@ -48,13 +46,11 @@ type: implementation
 
 主体内容：
 - 改动文件清单（每个一句话说改了啥）
-- 与 `design.md` 的偏差及原因（如有）
+- 与 `design.md` 的偏差及原因（如有；无 `design.md` 时跳过此节）
 - 跑过的测试命令与结果
 - 未做但 design 提到的项（带原因）
 
 已存在 → 增量更新 + 顶部 Changelog。
-
-**无 slug（`/fix`）**：不落 `implementation.md`，只落代码改动。返回 JSON 时 `task_slug=null` / `artifact_path=null`，其他字段照填（见 `agent-contract.md` "无 slug 场景"）。
 
 ## verdict 选择
 
@@ -62,7 +58,7 @@ type: implementation
 
 ## 返回消息
 
-落盘后（或无 slug 时直接）最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter（如有）逐字段相等。
+落盘后最后一条消息**必须**是 JSON（schema 见 `agent-contract.md`），与 frontmatter 逐字段相等。
 
 ## 报告完成前
 
@@ -83,7 +79,7 @@ type: implementation
 
 落盘前自检：
 
-- [ ] 有 slug 时 frontmatter 字段齐全；无 slug 时 task_slug/artifact_path = null
+- [ ] frontmatter 字段齐全（agent / task_slug / verdict / blockers / needs_iteration / artifact_path / summary / created_at / iteration / type）
 - [ ] verdict = implementation_complete
 - [ ] needs_iteration = false
 - [ ] blockers 每项可执行单句
