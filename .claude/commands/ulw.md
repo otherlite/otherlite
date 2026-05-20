@@ -39,11 +39,11 @@ teammate 不跨 session 存活；所有产出**必须**落到 `docs/specs/{slug}
 主会话按以下节点调度。所有 agent 输入/输出遵循 `docs/templates/agent-contract.md`。`[if hitl]` 标记的子项仅在 `mode = hitl` 生效。Pipeline 固定全跑，不支持跳过；slug 复用时各 agent 自行处理"文件已存在 → 增量更新 + Changelog"。
 
 1. **analyst** → `requirements.md`
-   - HITL [if hitl]: 等用户"通过"
+   - HITL [if hitl]: analyst **在自己 session 内** `AskUserQuestion` 拿用户"通过"，直到拿到通过再返回主会话
    - 强制中断: `verdict = needs_more_info`
 
 2. **architect** [deps: 1] → `design.md`
-   - HITL [if hitl]: 等用户"通过"；多方案让用户选
+   - HITL [if hitl]: architect **在自己 session 内** `AskUserQuestion`，包括多方案选型与"通过"确认，直到拿到通过再返回主会话
    - mode = autopilot 且多方案 → architect 自行选推荐并在 design.md 写明"为何选 A 弃 B/C"，verdict = `ready_for_impl`
    - 强制中断: `verdict = needs_user_decision`（不可逆 / 合规 / 真无明显赢家）
 
@@ -66,7 +66,7 @@ teammate 不跨 session 存活；所有产出**必须**落到 `docs/specs/{slug}
      - mode = autopilot → 直接 halt to user（首次失败就停下汇报）
 
 7. **wiki-curator** [deps: 6=pass] → `wiki-report.md` + wiki 文件改动
-   - HITL [if hitl]: 等用户"通过"才落盘（主会话调起时传 `hitl=true`）
+   - HITL [if hitl]: 主会话调起时传 `hitl=true`，wiki-curator **在自己 session 内** `AskUserQuestion` 让用户确认 wiki 改动后再落盘
    - mode = autopilot → 直接落盘（传 `hitl=false`）
    - 强制中断: `verdict = needs_human_review`
 
@@ -84,10 +84,12 @@ teammate 不跨 session 存活；所有产出**必须**落到 `docs/specs/{slug}
 
 ## HITL 纪律（mode = hitl 时生效）
 
-- 节点 1、2、7 必须等用户**显式"通过"**才能进下一步
-- 用户只补细节没说通过 → 让对应 agent 更新文件后**再问一次**
-- 节点 3、4 不设关卡；节点 5 完成后向用户汇报但不阻塞 gate
-- 节点 7 用户可选"暂停"跳过 wiki 更新（其余节点已固定全跑）
+- **确认在子 agent 自己的 session 里发生**：节点 1、2、7 的"通过"确认由对应 agent 用 `AskUserQuestion` 直接问用户；主会话**不**拦截后再转交，也不替子 agent 转问需求/方案/wiki 细节。这样省掉"主会话 ↔ 子 agent"的往返，更快、上下文更聚焦。
+- 主会话只在 pipeline 级别问用户：启动时选 mode（见"启动 §2"）、gate 失败后是否回 3 迭代、强制中断后下一步。
+- 节点 1、2、7 必须等用户**显式"通过"**才能进下一步（由 agent 自己拿到）。
+- 用户只补细节没说通过 → 对应 agent 在同一 session 内更新文件后**再问一次**，仍不返回主会话。
+- 节点 3、4 不设关卡；节点 5 完成后向用户汇报但不阻塞 gate。
+- 节点 7 用户可选"暂停"跳过 wiki 更新（其余节点已固定全跑）。
 
 ## 强制中断（无视模式）
 
