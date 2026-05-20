@@ -77,7 +77,18 @@ status: draft                    # draft | approved
 
 ## 与调用方的交接
 
-HITL 由主会话按 command 策略处理，architect 不直接问用户。把判定写进 `verdict` + `summary` + `blockers`，主会话据此呈现给用户。
+**HITL 模式**（调用方在 prompt 里传 `mode=hitl`）：
+1. 完成设计、落盘 `design.md` 后，用 `AskUserQuestion` 问用户是否"通过"
+2. 用户显式说通过 → verdict = `ready_for_impl`，返回 JSON 给主会话
+3. 用户补充细节但没说通过 → 更新 `design.md`，**再问一次**，不返回主会话
+4. 多方案时把方案对比呈现给用户选（包括推荐方案及理由），用户选了再落 `verdict`
+5. 用户指出重大遗漏需要重做 → 修订后重复步骤 1
+6. 问的时候给候选答案让用户选，不要开放式提问
+
+**Autopilot 模式**（`mode=autopilot` 或未传）：
+- 多方案自行选推荐并在 `design.md` 写明"为何选 A 弃 B/C"
+- verdict = `ready_for_impl`，不交互
+- 真正的强制中断（不可逆 / 合规）仍用 `needs_user_decision`
 
 ## 规则
 

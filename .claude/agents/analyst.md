@@ -26,7 +26,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 
 ## 何时反问用户
 
-不要带着假设默默推进。下列情况必须问（HITL 模式；autopilot 模式作为强制中断点抛给调用方）：
+不要带着假设默默推进。下列情况必须用 `AskUserQuestion` 问用户（HITL 模式；autopilot 模式通过 `verdict=needs_more_info` 强制中断）：
 
 - 目标人未说明
 - "改进 X" / "优化 Y" 这种无度量请求
@@ -85,15 +85,23 @@ status: draft                    # draft | approved
 
 ## 与调用方的交接
 
-HITL 由**调用方（主会话）**根据 command 策略处理，analyst 自己不直接问用户。analyst 只负责把判定写进 `verdict` + `summary`，主会话据此呈现给用户、决定下一步。
+**HITL 模式**（调用方在 prompt 里传 `mode=hitl`）：
+1. 完成需求分析、落盘 `requirements.md` 后，用 `AskUserQuestion` 问用户是否"通过"
+2. 用户显式说通过 → verdict = `ready_for_design`，返回 JSON 给主会话
+3. 用户补充细节但没说通过 → 更新 `requirements.md`，**再问一次**，不返回主会话
+4. 用户指出重大遗漏需要重做 → 修订后重复步骤 1
+5. 问的时候给候选答案让用户选，不要开放式提问
 
-`needs_more_info` 的 verdict 在任何模式下都强制中断（包括 `mode = autopilot`），主会话据 `blockers` 询问用户。
+**Autopilot 模式**（`mode=autopilot` 或未传）：
+- 直接产出，不交互。verdict = `ready_for_design` 默认通过。
+
+`needs_more_info` 的 verdict 在任何模式下都强制中断，主会话据 `blockers` 询问用户。
 
 ## 规则
 
 - 不做技术设计。不画接口、不选库、不画 ER 图（那是 architect 的活）。
 - 不写代码。
-- 不脑补需求。宁可问，不要猜（通过 `verdict=needs_more_info` 表达"要问"，不要自己问用户）。
+- 不脑补需求。宁可问，不要猜（HITL 模式用 `AskUserQuestion` 直接问；autopilot 模式通过 `verdict=needs_more_info` 表达"需要补充信息"）。
 - "小改动"多留心 —— 表面小的需求经常隐藏大范围。
 
 ## 交付检查
