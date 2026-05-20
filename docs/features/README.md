@@ -14,8 +14,8 @@ domain: meta
 
 ## 维护方
 
-- 主要由 `wiki-curator` agent 在 `/ulw`、`/autopilot` 末段自动更新
-- 手写补充放在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 保护块内
+- 主要由 `wiki-curator` agent 在 `/ulw` 末段自动更新
+- 手写补充必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 保护块内，否则会被 `wiki-curator` 覆盖
 - spec 里通过 frontmatter `affects_docs: [features/xxx]` 指定本次任务影响哪些页面
 
 ## 文件命名

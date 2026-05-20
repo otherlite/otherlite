@@ -15,7 +15,7 @@ domain: meta
 ## 维护方
 
 - 主要由 `wiki-curator` 自动更新
-- 手写补充放在 HUMAN 保护块内
+- 手写补充必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 保护块内，否则会被 `wiki-curator` 覆盖
 - spec frontmatter `affects_docs: [api/xxx]` 指定本次影响的接口
 
 ## 文件命名

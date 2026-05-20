@@ -1,39 +1,47 @@
 ---
-description: 只产出需求 + 设计文档，不写代码 —— subagent 串行跑 analyst → architect，两道 HITL 关卡都保留
+description: 只产出需求文档 —— subagent 跑 analyst，一道 HITL 关卡；后续接 /ulw {slug} 进设计 + 实现
 ---
 
-按"只出方案不实现"模式处理用户请求：`$ARGUMENTS`
+按"只做需求分析"模式处理用户请求：`$ARGUMENTS`
 
 ## 调用机制
 
-**subagent**（Agent 工具）。
+**subagent**（Agent 工具）。单 agent，不开 team。
 
 ## task-slug 生成
 
-启动时根据用户请求自动生成：
-- 格式：`{kebab-case-描述}-{YYYY-MM-DD}`
-- 示例：用户输入 "做个用户分级定价" → slug = `tiered-pricing-2026-05-17`
-- 描述部分取 3-5 个英文/拼音关键词，能识别即可
+启动时自动生成 `{kebab-case-描述}-{YYYY-MM-DD}`：
+- 描述部分取 3-5 个英文/拼音关键词
 - **不要问用户** slug，直接用并在第一句话告诉用户："本次产出将落在 `docs/specs/{slug}/`"
 - 如果 `docs/specs/{slug}/` 已存在 → 提示用户："已有同名 spec，继续会增量更新（保留 Changelog）；要换一个 slug 吗？"
 
-## 流程
+## Pipeline
 
-1. 调起 `requirements-analyst`。prompt 模板：
-   > 任务：{用户原始请求}
-   > task-slug: {slug}
-   > 完成后把需求文档写到 `docs/specs/{slug}/requirements.md` 并返回摘要。
+主会话按以下节点调度。agent 输入/输出遵循 `docs/templates/agent-contract.md`。
 
-2. analyst 返回 → 主会话把文档关键内容呈现给用户 → **HITL 关卡 1**：等用户明确"通过"。
+1. **analyst** → `requirements.md`
+   - 输入：`{task_slug, inputs: [], outputs_required: [docs/specs/{slug}/requirements.md], iteration: 0, previous_feedback: null}`
+   - HITL: 等用户"通过"
+   - 强制中断: `verdict = needs_more_info`（Open Questions 阻塞下游）
 
-3. 用户通过后，调起 `architect`。prompt 模板：
-   > task-slug: {slug}
-   > 读 `docs/specs/{slug}/requirements.md` 作为输入，产出设计写到 `docs/specs/{slug}/design.md` 并返回摘要。
+2. **lead 收尾** [deps: 1]
+   - 把 `analyst.summary` 呈现给用户
+   - 给路径：`docs/specs/{slug}/requirements.md`
+   - 建议下一步：`/ulw {slug}` 从已有 requirements 继续（自动跳过 analyst，从 architect 开始）；加 `--auto` 跳过 HITL
 
-4. architect 返回 → 呈现给用户 → **HITL 关卡 2**：等用户明确"通过"。
+## HITL 纪律
 
-5. 结束。**不调起** developer / qa / security / reviewer。最后给用户两份文件路径。
+- 节点 1 等用户**显式"通过"**才结束
+- 用户只补细节没说通过 → 让 analyst 更新 `requirements.md` 后**再问一次**，不要替用户拍板
+- `verdict = needs_more_info` → 把 blockers 给用户，等用户回答后让 analyst 再跑一轮（iteration+1，主会话注入 `previous_feedback`）
 
-## 何时升级到 `/ulw`
+## 强制中断
 
-用户说"开做" → 提议 `/ulw {slug}`，从已确认的需求 + 设计继续，不重跑前两步。
+- analyst 自己也无法把需求整理到可设计程度（多轮迭代后仍 needs_more_info）→ 暂停，等用户提供更多上下文
+
+## 何时升级
+
+- 用户说"接着设计" / "直接开做" → 提议 `/ulw {slug}`（自动从 architect 开始）
+- 用户说"直接跑完不要管我" → 提议 `/ulw {slug} --auto`
+
+只 analyst 一个 agent，不调起其他。

@@ -16,7 +16,7 @@ domain: meta
 
 - 主要由 `wiki-curator` 自动更新（来源于 spec 的 design.md）
 - 重大架构决策（ADR）由 architect 手写，放在 `adr/` 子目录
-- 手写补充放在 HUMAN 保护块内
+- 手写补充必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 保护块内，否则会被 `wiki-curator` 覆盖
 
 ## 文件命名
 

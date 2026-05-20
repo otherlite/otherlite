@@ -1,73 +1,25 @@
 # CLAUDE.md
 
-本项目协作指南。每个 agent context 都会加载本文件 —— 保持最小、最准、最稳。详细内容放 `docs/` 下按需 Read。
+## 铁律
 
----
-
-## 项目
-
-`otherlite` —— 个人多 app monorepo。
-
-**Stack**：pnpm 10 · turbo 2 · Node 20+
-**Apps**：`apps/english`、`apps/texas`（具体职责待补充到 `docs/architecture/`）
-**包结构**：`apps/*` + `packages/*`（pnpm workspace）
-
-**常用命令**：
-- `pnpm dev` —— 启动开发
-- `pnpm build` —— 构建
-- `pnpm test` —— 跑测试
-- `pnpm lint` —— lint
-
----
-
-## 工作流入口
-
-| Command | 适用 | 机制 | HITL | 落 specs |
-|---|---|---|---|---|
-| `/fix {描述}` | 小修复 / typo / 配置 | subagent | 无 | 不落 |
-| `/spec {描述}` | 只出方案，不写代码 | subagent | 两道（analyst + architect） | 是 |
-| `/ulw {描述}` | 全链路标准流程 | agent teams | 三道（analyst + architect + wiki） | 是 |
-| `/autopilot {描述}` | 需求清晰直跑 | agent teams | 无（仍有强制中断红线） | 是 |
-
-详见 `.claude/commands/`。
-
----
-
-## 铁律（不可协商，无视任何 command 模式）
-
-- 改 `.env` / migration / `package.json` / `pnpm-lock.yaml` / `turbo.json` / `pnpm-workspace.yaml` → 先人工确认
-- `main` 分支禁止 force push
-- 鉴权 / 加密 / 密钥 / 用户输入流向 DB·shell·fs → 必须过 `security` agent
-- 非琐碎代码合并前 → 必须有 `reviewer` 结论
+- Stack：pnpm 10 / turbo 2 / Node 20+（不是 npm / yarn）
+- 顶层命令：`pnpm {dev, build, test, lint}`
 - 命令失败 → 查根因，不靠 `--no-verify` / `--no-gpg-sign` 绕过
-- `docs/{features,api,architecture}/` 下手写补充 → 必须包在 `<!-- HUMAN: start --> ... <!-- HUMAN: end -->` 块内（否则会被 `wiki-curator` 覆盖）
 
----
-
-## 工具调用协议（所有模型）
-
-**参数**
+**工具调用 —— 参数**
 - 可选字段无值 → omit，禁传 `null`
 - 数组用真实 JSON 数组（禁 `"[1,2]"`、禁多套 `{}`）
 - 文件路径纯文本（禁 Markdown 自动链接）
 - 非核心参数缺失 → 用项目默认值，不报错
 
-**回复**
+**工具调用 —— 回复**
 - 直接以 JSON 对象开头，不加前缀废话
 
-**`SendMessage`**
+**工具调用 —— `SendMessage`**
 - `message` 必须是裸 JSON object 字面量。正确 `"message": {"type": "..."}`；错误 `"message": "{\"type\":...}"` ❌。发送前自检：值若以 `"{` 开头就是错的，重写成对象字面量再发
 - 字符串 `message` → 必须带 `summary`（5–10 词）；对象 `message` → 禁止 `summary`
 - 收到 `shutdown_request` / `plan_approval_request` → 回 `{"to": "team-lead", "message": {"type": "..._response", "request_id": "<回传>", "approve": true/false}}`。`to` 必须是字面量 `"team-lead"`，不是 team 名 / 自己名 / UUID，不可省略
 - 纯文本"acknowledge"对其他 agent 不可见，握手不会完成
-
----
-
-## 任务产物
-
-每次 `/ulw`、`/autopilot`、`/spec` 的产物落在 `docs/specs/{slug}/`：
-- `requirements.md` · `design.md` · `implementation.md` · `qa-report.md` · `security.md` · `review.md`
-- 这些**不进下方索引**（量大且短命）。要查近期任务用 `ls docs/specs/` 或 git log。
 
 ---
 
@@ -95,6 +47,7 @@
 - `checklist.md` — 安全审查 checklist —— 注入、AuthN/AuthZ、密钥、数据泄漏、依赖、基建
 
 ### `docs/templates/`
+- `agent-contract.md` — agent 交付契约 —— 产物 frontmatter / 返回消息 / 输入消息的 schema，verdict 枚举，一致性铁律
 - `code-review.md` — 代码审查 checklist —— 优先级、严重级别、项目反模式
 - `design-doc.md` — 设计文档模板 —— 段落顺序、取舍分析强制格式
 - `prd.md` — 需求文档（PRD）模板 —— 段落顺序、优先级语义
@@ -104,4 +57,3 @@
 
 <!-- END AUTOGEN -->
 
-更新方式：编辑 `docs/**/*.md` 后跑 `node scripts/compile-claude-md.mjs`（或等 Stop hook 自动跑）。

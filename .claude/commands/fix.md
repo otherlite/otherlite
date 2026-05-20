@@ -10,30 +10,40 @@ description: 小范围 bug 修复 / typo / 配置改 —— subagent 直跑 deve
 
 ## 不生成 task-slug
 
-小修复不落 `docs/specs/`，因为创建一坨文件夹的开销 > 修一个 typo 的收益。所有 agent prompt 里**不要**传 `task-slug` —— 让 agent 的"产出落盘"逻辑被跳过。
+小修复不落 `docs/specs/`。所有 agent 输入消息里 `task_slug = null` / `outputs_required = []`（见 `docs/templates/agent-contract.md` "无 slug 场景"）。agent 不落产物文件，只返回 JSON。
 
-## 流程
+## Pipeline
 
-1. 调起 `developer` agent 实现修复。prompt 模板：
-   > 任务：{用户原始请求}
-   > 不传 task-slug。直接改代码 + 跑相关测试 + 返回改动文件清单。
+主会话按以下节点调度。agent 输入/输出遵循 `docs/templates/agent-contract.md` 的"无 slug 场景"规则。
 
-2. developer 返回后，调起 `reviewer` agent 做合并前审查。prompt 模板：
-   > 审查刚才 developer 的改动（diff 见 `git diff`）。不传 task-slug，结论直接返回。
+1. **developer** → 代码改动
+   - 输入：`{task_slug: null, inputs: [], outputs_required: [], iteration: 0, previous_feedback: null}` + 用户原始请求
+   - 直接改代码 + 跑相关测试
+   - verdict = `implementation_complete`
 
-3. **触发条件下额外调起 `security`**：改动触及鉴权 / 密钥 / 加密 / 用户输入流向 DB/shell/fs / 对外端点 → 并行（与 reviewer 同一条消息发出）。
+2. **reviewer** [deps: 1] + **security**（触发条件时与 reviewer 并行 `‖`） → JSON 结论
+   - reviewer 总是调起
+   - security 触发条件：改动触及鉴权 / 密钥 / 加密 / 用户输入流向 DB·shell·fs / 对外端点
+   - 触发时一条消息里同时 Agent 两个；都仅返回 JSON（无 slug 不落文件）
 
-4. 汇总 reviewer（+ security）结论 → 给用户。
+3. **gate** [deps: 2]
+   - 通过条件: `reviewer.verdict ∈ {pass, pass_with_comments}` AND（如有 security）`security.verdict = can_merge`
+   - 否则: halt to user，给出 blockers（迭代策略见下方 HITL 段）
+
+4. **lead 汇报** [deps: 3]
+   - reviewer.summary + （如有）security.summary 给用户
+   - gate fail → 让用户决定下一步（修 / 不修 / 升级到 `/ulw`）
 
 ## 适用边界
 
-发现以下情况，**停下来反问用户**是否切到 `/ulw` 或 `/autopilot`：
+发现以下情况，**停下来反问用户**是否切到 `/ulw`：
 
 - 跨多个模块、需要新数据模型 / 新接口
 - 用户描述本身模糊
 - 需要新增依赖或破坏现有契约
+- developer 返回的 blockers 表明任务范围超预期
 
 ## HITL
 
-- developer 完成后不等用户确认，直接进 reviewer。
-- reviewer 给出"要求修改" → 把详情交给用户决定，**不自动迭代**。
+- developer 完成后不等用户确认，直接进 reviewer
+- gate fail → 把 blockers 详情交给用户决定，**不自动迭代**

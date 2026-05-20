@@ -9,25 +9,13 @@ const CONFIG_FILENAME = "router.json";
 const SECRETS_FILENAME = "router.local.json";
 const TAG = "[claude-teams-router]";
 
-function sameFile(a, b) {
-  try {
-    return fs.realpathSync(a) === fs.realpathSync(b);
-  } catch {
-    return false;
-  }
-}
-
 function resolveRealClaude() {
   if (process.env.CLAUDE_ROUTER_REAL_CLAUDE) {
     return process.env.CLAUDE_ROUTER_REAL_CLAUDE;
   }
-  const result = spawnSync("/usr/bin/which", ["-a", "claude"], { encoding: "utf8" });
+  const result = spawnSync("/usr/bin/which", ["claude"], { encoding: "utf8" });
   if (result.status !== 0) return null;
-  const candidates = result.stdout.split("\n").map((s) => s.trim()).filter(Boolean);
-  for (const c of candidates) {
-    if (!sameFile(c, __filename)) return c;
-  }
-  return null;
+  return result.stdout.trim() || null;
 }
 
 function log(msg) {
