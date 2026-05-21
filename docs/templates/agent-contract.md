@@ -1,5 +1,5 @@
 ---
-description: agent 交付契约 —— 产物 frontmatter / 返回消息 / 输入消息的 schema，verdict 枚举，self-commit 与一致性铁律
+description: agent 交付契约 —— 输入/产物 schema、verdict 枚举、self-commit、主会话靠 idle + frontmatter 判定完成
 domain: templates
 ---
 
@@ -9,7 +9,26 @@ domain: templates
 
 > Pipeline 节点全程串行（developer 拆多个独立子任务）。qa/reviewer/security 异常进自纠错循环（两 mode 共享 3 轮上限；HITL 每轮异常用户三选触发，autopilot 自动；详见 `.claude/commands/ulw.md` §自纠错循环）。3 轮用尽 → 用户二选 走/停（默认走，进节点 7+PR；停=halt）。其余异常 HITL halt，autopilot 按表自动裁决。
 
-## 三种 schema
+## 通信模型
+
+**主会话靠两条信号判定子 agent 完成**，agent 不需要主动调任何通信工具：
+
+| 信号 | 来源 | 含义 |
+|---|---|---|
+| `idle_notification` | cmux 平台自动 inject 给主会话 | agent 进程停止生成 token —— "活儿干完了 / 暂停了 / 卡住了" |
+| 产物 frontmatter `verdict` | agent self-commit 落盘 | agent 自报的判定 —— 单一事实源 |
+
+主会话收到 idle 后**必须** `ls` 检查 outputs_required + 读 frontmatter verdict。决策表：
+
+| idle 收到 | 文件存在 | verdict 枚举 | 主会话动作 |
+|---|---|---|---|
+| ✅ | ✅ | 在该 agent 枚举内 | 按 verdict 走（pass/fail/blocked 等） |
+| ✅ | ✅ | 缺失 / 非枚举值 | 视为 `blocked`，按 mode 处理（HITL halt，autopilot 进 §自纠错循环或记 log） |
+| ✅ | ❌ | — | 视为 `blocked`（agent 没落盘就停了），同上 |
+
+**禁止调用 `SendMessage` 工具传业务 verdict / blockers / 中间产物**。该工具仅保留给平台协议（`shutdown_*` / `plan_approval_response`），ulw pipeline 全程不触发。
+
+## 两种 schema
 
 ### 1. 产物文件 frontmatter（单一事实源）
 
@@ -59,24 +78,7 @@ created_at: 2026-05-20T10:30:00Z         # ISO 8601
 | security | `type: security` · `severity_breakdown: {critical: 0, high: 0, medium: 0, low: 0}` | 主会话 |
 | wiki-curator | 写入 wiki 文件时用 wiki 自身 frontmatter（`description` / `domain` / `last_updated_by_spec`），契约 frontmatter 只用于"操作报告"摘要 |
 
-### 2. agent 返回给主会话的消息（frontmatter 的 JSON 副本）
-
-agent 完成任务后，**最后一条消息必须**是 JSON：
-
-```json
-{
-  "agent": "reviewer",
-  "task_slug": "tiered-pricing-2026-05-17",
-  "verdict": "pass_with_comments",
-  "blockers": [],
-  "artifact_path": "docs/specs/tiered-pricing-2026-05-17/review.md",
-  "summary": "代码质量整体好，3 处可读性改进建议"
-}
-```
-
-**铁律**：JSON 字段值必须与落盘 frontmatter **逐字段相等**。两者不一致 → agent 输出无效，主会话拒收，要求重做。
-
-### 3. 主会话给 agent 的输入消息
+### 2. 主会话给 agent 的输入消息
 
 主会话调起 agent 时（`Agent({...})` 的 prompt 部分）前置一段 JSON：
 
@@ -170,14 +172,14 @@ merge_gate.pass ⇔
 
 ## Self-commit（agent 自己提交）
 
-每个落盘产物的 agent **必须**在落盘后、返回 JSON 前执行：
+每个落盘产物的 agent **必须**在 idle 之前、作为最后一步执行：
 
 ```bash
 bash .claude/scripts/agent-commit.sh <agent> <summary>
 ```
 
 - `<agent>`：本 agent 名（developer 子任务用 `developer-{subtask.id}`，初始如 `developer-2`、retry 如 `developer-retry-1.1`；architect 在 retry 轮仍叫 `architect`，靠 summary 区分初始 vs retry）
-- `<summary>`：与返回 JSON 的 `summary` 字段一致
+- `<summary>`：与 frontmatter `summary` 字段一致
 
 脚本会：
 - 根据 agent 名自动推断 pipeline 节点序号（analyst=1 / architect=2 / developer-*=3 / qa=4 / reviewer=5 / security=6 / wiki-curator=7）—— `developer-*` 通配匹配初始 `developer-{i}` 和 retry `developer-retry-{r}.{i}` 两种命名
@@ -185,20 +187,20 @@ bash .claude/scripts/agent-commit.sh <agent> <summary>
 - summary 超 50 字自动截断
 - 无 staged 改动 → 静默跳过（idempotent）
 
-commit 后再返回最后一条 JSON 消息。**主会话不 commit**，只在节点 8 push + `gh pr create`。
+commit 之后 agent **直接结束**，不再调用任何工具（不发 SendMessage、不输出额外文本）。主会话靠 idle_notification + 落盘 frontmatter 接管。
 
 ## 一致性铁律
 
-1. **JSON 返回值与文件 frontmatter 必须逐字段相等**。不一致 = 输出无效。
-2. **verdict 必须用枚举值**。禁止自创词。需要表达细节用 `blockers` 数组。
-3. **blockers 数组每一项必须是可执行的单句**。例：`"登录处缺 rate-limit"` ✅；`"代码质量整体可以提升"` ❌。
-4. **summary 是给用户看的**，主会话汇报时直接复制。
-5. **artifact_path 必须与实际落盘路径一致**。
-6. **self-commit 是 agent 责任**。落盘 → commit → 返回 JSON 三步缺一不可。
+1. **verdict 必须用枚举值**。禁止自创词。需要表达细节用 `blockers` 数组。
+2. **blockers 数组每一项必须是可执行的单句**。例：`"登录处缺 rate-limit"` ✅；`"代码质量整体可以提升"` ❌。
+3. **summary 是给用户看的**，主会话汇报时直接复制。
+4. **artifact_path 必须与实际落盘路径一致**。
+5. **self-commit 是 agent 责任，且必须是 idle 前最后一步**。落盘 → commit → 结束三步缺一不可，期间不调任何额外工具。
+6. **禁止调 SendMessage 传业务内容**。该工具在 ulw pipeline 内不被使用。
 
 ## Agent 之间不直接通信
 
-所有跨 agent 协作经主会话中转。agent 发现需要其他 agent 的产物 → 在 `blockers` 里说明 → 主会话决策。**禁止使用 `SendMessage` 在 teammate 之间直接传 verdict 或 blockers**。
+所有跨 agent 协作经主会话中转：下游 agent 必读上游 agent 已落盘的 spec 文件（`docs/specs/{slug}/*.md`），靠 frontmatter + 主体取信息。**不存在 agent 间直接消息通道**。
 
 ## 通用交付检查（所有 agent 适用）
 
@@ -208,8 +210,8 @@ commit 后再返回最后一条 JSON 消息。**主会话不 commit**，只在�
 - [ ] verdict 在本 agent 枚举范围内
 - [ ] blockers 每项是可执行单句
 - [ ] artifact_path 与实际落盘路径一致
-- [ ] **已执行 `bash .claude/scripts/agent-commit.sh <agent> "<summary>"`**
-- [ ] 最后一条消息是 JSON，与 frontmatter 逐字段相等
+- [ ] **已执行 `bash .claude/scripts/agent-commit.sh <agent> "<summary>"`** 且这是结束前最后一步
+- [ ] **未调用 SendMessage 传 verdict / blockers / 任务结果**
 
 ## 在 agent prompt 里引用本契约
 
@@ -218,7 +220,7 @@ commit 后再返回最后一条 JSON 消息。**主会话不 commit**，只在�
 ```markdown
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— 输入/产物/返回 schema、verdict 枚举、self-commit、通用交付检查
+- `docs/templates/agent-contract.md` —— 输入/产物 schema、verdict 枚举、self-commit、通用交付检查
 - {agent 专属模板，如 prd.md / design-doc.md / code-review.md}
 ```
 

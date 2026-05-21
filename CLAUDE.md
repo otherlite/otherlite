@@ -16,11 +16,9 @@
 - 直接以 JSON 对象开头，不加前缀废话
 
 **工具调用 —— `SendMessage`**
-- `message` 必须是裸 JSON object 字面量。正确 `"message": {"type": "..."}`；错误 `"message": "{\"type\":...}"` ❌。发送前自检：值若以 `"{` 开头就是错的，重写成对象字面量再发
-- 字符串 `message` → 必须带 `summary`（5–10 词）；对象 `message` → 禁止 `summary`
-- 收到 `shutdown_request` / `plan_approval_request` → 回 `{"to": "team-lead", "message": {"type": "..._response", "request_id": "<回传>", "approve": true/false}}`。`to` 必须是字面量 `"team-lead"`，不是 team 名 / 自己名 / UUID，不可省略
-- 纯文本"acknowledge"对其他 agent 不可见，握手不会完成
-- **teammate 之间不直接通信**：跨 agent 协作只能经主会话中转，禁用 `SendMessage` 在 teammate 之间传 verdict / blockers / 中间产物。下游 agent 必读上游落盘文件（见 `docs/templates/agent-contract.md`）
+- **ulw pipeline 内禁用**：业务 verdict / blockers / 任务结果一律走 frontmatter 落盘。主会话靠 `idle_notification`（cmux 平台自动）+ 文件 frontmatter 双信号判定完成。详见 `docs/templates/agent-contract.md` §通信模型
+- 该工具仅为平台协议保留（`shutdown_request` / `shutdown_response` / `plan_approval_response`）。收到此类协议消息时按既有平台约定回，其余场景一律不调
+- **teammate 之间不直接通信**：跨 agent 协作经主会话中转，下游 agent 必读上游落盘文件
 
 ---
 
@@ -39,7 +37,7 @@
 - `docs/features/README.md` — 产品功能视角的 wiki —— 用户/产品角度的功能定义
 - `docs/features/todo-mvp.md` — 单用户本地 Todo 应用，支持创建、查看、勾选完成、编辑、删除待办，数据持久化于浏览器
 - `docs/security/checklist.md` — 安全审查 checklist —— 注入、AuthN/AuthZ、密钥、数据泄漏、依赖、基建
-- `docs/templates/agent-contract.md` — agent 交付契约 —— 产物 frontmatter / 返回消息 / 输入消息的 schema，verdict 枚举，self-commit 与一致性铁律
+- `docs/templates/agent-contract.md` — agent 交付契约 —— 输入/产物 schema、verdict 枚举、self-commit、主会话靠 idle + frontmatter 判定完成
 - `docs/templates/code-review.md` — 代码审查 checklist —— 优先级、严重级别、项目反模式
 - `docs/templates/design-doc.md` — 设计文档模板 —— 段落顺序、取舍分析强制格式
 - `docs/templates/prd.md` — 需求文档（PRD）模板 —— 段落顺序、优先级语义

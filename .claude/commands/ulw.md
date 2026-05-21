@@ -42,6 +42,7 @@ git / worktree 操作全部封装在 `.claude/scripts/ulw-*.sh`，主会话只�
 
 - **TeamCreate**：`team_name="ulw-{slug}"`，主会话 = team lead；结束 `TeamDelete`
 - **Agent 输入**：`Agent({...})` prompt 前置 JSON（必填 `task_slug / mode / inputs / outputs_required`）。developer 子任务额外带 `subtask`；architect retry 额外带 `retry_round`。schema 见 `docs/templates/agent-contract.md`
+- **完成信号**：主会话靠两条信号判定 agent 完成 ——（1）cmux 自动发的 `idle_notification`，（2）`docs/specs/{slug}/{outputs_required}` 落盘文件的 frontmatter `verdict`。**agent 禁用 `SendMessage` 传业务内容**；详见 `agent-contract.md` §通信模型
 - **状态持久化**：teammate 不跨 session 存活；产出全落 `docs/specs/{slug}/`，session 断也能基于文件续跑
 - **teammate 不直接通信**：跨 agent 协作经主会话；下游读上游落盘文件（见 `agent-contract.md`）
 
@@ -74,9 +75,23 @@ git / worktree 操作全部封装在 `.claude/scripts/ulw-*.sh`，主会话只�
    - 读取来源：`docs/specs/{slug}/*.md` frontmatter + 主体；autopilot 模式额外读 `autopilot-log.md`
    - PR body 顺序：spec 路径 → 需求摘要 → 设计方案 + 备选弃因 → subtasks 清单（初始 + 每轮 retry）+ 各 developer verdict → 自纠错轮次（如进过循环；两 mode 都可能进；从 `design.md` `retry_rounds` 读；3 轮用尽时醒目标注 "3 retries exhausted"）→ 改动文件清单 → qa 测试结果 → reviewer 完整结论 → security 完整结论 + severity_breakdown → wiki 改动清单 → 合并门控判定（pass ⇔ reviewer ∈ {pass, pass_with_comments} AND security = can_merge）→ autopilot 自动裁决记录（autopilot-log 全文）→ ⚠️ 破坏性变更告警（醒目置顶）
    - 把 PR body 写到 `/tmp/ulw-pr-body-{slug}.md`，调 `bash .claude/scripts/ulw-pr-create.sh {slug} /tmp/ulw-pr-body-{slug}.md`（脚本验证分支 + clean check + push + `gh pr create --draft` + 输出 URL）
-   - 把 URL 转给用户；不自动清理 worktree；`TeamDelete`
+   - 把 URL 转给用户
+   - **清理子 agent pane**：调 `bash .claude/scripts/ulw-close-panes.sh {slug}` 关掉所有 cwd 落在本次 worktree 下的 cmux pane（focused pane 即主会话自己不动）
+   - `TeamDelete`；worktree / 分支不自动清理（用户手动用 `ulw-cleanup.sh`）
 
 ## 异常处理
+
+### 通用完成检查（每个节点结束都要做）
+
+主会话每收到一条 `idle_notification` 都必须按以下决策表处理，再决定下一步：
+
+| idle 收到 | outputs_required 文件存在 | frontmatter verdict | 主会话动作 |
+|---|---|---|---|
+| ✅ | ✅ | 在该 agent 枚举内 | 按 verdict 走（详见各 mode 小节） |
+| ✅ | ✅ | 缺失 / 非枚举值 | 视为该 agent 的"阻塞类" verdict（如 `analyst.needs_more_info` / `developer.blocked` / `qa.fail` 等），按 mode 处理 |
+| ✅ | ❌ | — | 同上（视为阻塞 + agent 没落盘） |
+
+决策表见 `docs/templates/agent-contract.md` §通信模型；本节后续两个 mode 表只列正常 verdict 的处理。
 
 ### HITL 模式
 

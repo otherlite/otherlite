@@ -58,7 +58,7 @@ severity_breakdown: {critical: 0, high: 0, medium: 0, low: 0}
 
 ## 早返回
 
-发现 **Critical** 或 **High** → `verdict=cannot_merge`，立刻完成最小报告并返回 JSON，不等其他检查跑完。
+发现 **Critical** 或 **High** → `verdict=cannot_merge`，立刻完成最小报告 + self-commit + 结束，不等其他检查跑完。
 
 ## 规则
 

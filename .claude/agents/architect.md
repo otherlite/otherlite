@@ -151,4 +151,4 @@ HITL 模式下**初始 + Retry 两类都要做**：落盘后向用户询问"通�
 - [ ] retry subtasks 覆盖三份 check 报告所有 blockers
 - [ ] Changelog 加了本轮 retry planning 条目
 
-agent-contract.md §通用交付检查 的项（frontmatter 字段齐 / verdict 枚举 / blockers 单句 / artifact_path / agent-commit / 最后一条 JSON）不在这里重复，但**仍需自检**。
+agent-contract.md §通用交付检查 的项（frontmatter 字段齐 / verdict 枚举 / blockers 单句 / artifact_path / agent-commit / 禁调 SendMessage）不在这里重复，但**仍需自检**。
