@@ -1,0 +1,15 @@
+# 创建 /ulw worktree 时，从主仓库拷贝到新 worktree 的本地文件清单
+#
+# 用途：worktree 起自 origin/main，不含未追踪的本地配置 / 凭证 / 状态文件，
+# 但 sub-agent 跑测试 / 脚本 / 路由解析时可能需要它们。这里列的文件会被
+# `cp -r` 进 worktree 的同路径。
+#
+# 规则：
+#   - 一行一个路径，相对仓库根
+#   - 支持文件或目录（目录用 cp -r 整个拷贝）
+#   - 不支持 glob
+#   - # 开头为注释，空行忽略
+#   - 路径在主仓库不存在 → warn 跳过（不视为错误，可能用户本地确实没有）
+
+.claude/router.local.json
+.claude/settings.local.json

@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $CLAUDE_PROJECT_DIR/scripts/compile-claude-md.mjs",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/scripts/compile-claude-md.mjs",
             "timeout": 10
           }
         ]

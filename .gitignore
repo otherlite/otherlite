@@ -54,3 +54,6 @@ venv/
 .claude/*.backup.*
 .claude/settings.local.json
 .claude/router.local.json
+
+# ulw pipeline worktrees
+.worktrees/
