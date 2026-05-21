@@ -17,11 +17,11 @@ jobs:
           node-version: '20'
 
       - name: 编译 L1 → L2（生成 CLAUDE.md AUTOGEN 段）
-        run: node scripts/compile-claude-md.mjs
+        run: node .claude/scripts/compile-claude-md.mjs
 
       - name: 检测漂移
         run: |
           if ! git diff --exit-code CLAUDE.md; then
-            echo "::error::CLAUDE.md 与 docs/ 不一致。请本地跑 'node scripts/compile-claude-md.mjs' 并把改动一起提交。"
+            echo "::error::CLAUDE.md 与 docs/ 不一致。请本地跑 'node .claude/scripts/compile-claude-md.mjs' 并把改动一起提交。"
             exit 1
           fi
