@@ -1,7 +1,7 @@
 {
     "agents": {
-      "developer": "minimax",
-      "qa": "minimax",
+      "developer": "deepseek",
+      "qa": "deepseek",
       "reviewer": "minimax",
       "security": "minimax",
       "wiki-curator": "minimax"
