@@ -32,10 +32,12 @@
 
 - `docs/api/README.md` — 对外接口视角的 wiki —— endpoint 群组、协议、契约
 - `docs/architecture/README.md` — 系统结构视角的 wiki —— 包边界、关键流程、数据模型、跨服务通信
+- `docs/architecture/todo-mvp.md` — apps/todo 模块的包边界、依赖方向、数据模型、关键流程与架构决策
 - `docs/coding/backend.md` — 后端实现规则 —— 防御性代码边界、migration、日志
 - `docs/coding/frontend.md` — 前端实现规则 —— 组件复用、样式方案、无障碍、TS
 - `docs/coding/general.md` — 通用代码规则 —— 注释、向后兼容、删除、命名
 - `docs/features/README.md` — 产品功能视角的 wiki —— 用户/产品角度的功能定义
+- `docs/features/todo-mvp.md` — 单用户本地 Todo 应用，支持创建、查看、勾选完成、编辑、删除待办，数据持久化于浏览器
 - `docs/security/checklist.md` — 安全审查 checklist —— 注入、AuthN/AuthZ、密钥、数据泄漏、依赖、基建
 - `docs/templates/agent-contract.md` — agent 交付契约 —— 产物 frontmatter / 返回消息 / 输入消息的 schema，verdict 枚举，self-commit 与一致性铁律
 - `docs/templates/code-review.md` — 代码审查 checklist —— 优先级、严重级别、项目反模式
