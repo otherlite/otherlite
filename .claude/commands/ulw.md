@@ -17,7 +17,7 @@ description: 全链路 pipeline —— analyst → architect → developer × N 
 lead 向用户询问 `mode`：
 
 - `hitl` —— 关卡节点 analyst / architect / wiki-curator 必须询问用户"通过"；节点 4-6 任一异常时主会话给三选（halt / retry / abort，默认 retry）；其余异常即 halt
-- `autopilot` —— 不交互；节点 4-6 异常自动进自纠错循环；其余异常按 §异常处理 自动裁决
+- `autopilot` —— 节点 4-6 异常自动进自纠错循环；其余异常按 §异常处理 自动裁决
 
 > 自纠错循环两模式共享 3 轮上限，3 轮用尽 → 用户二选 **走 / 停**（默认走）：走 → 进节点 7 + PR body 标注 "3 retries exhausted"；停 → halt（worktree 保留）。详见 §自纠错循环。
 
