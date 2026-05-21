@@ -1,14 +1,14 @@
 ---
-agent: developer-2
+agent: developer-3
 task_slug: todo-mvp-2026-05-21
 verdict: implementation_complete
 blockers: []
 artifact_path: docs/specs/todo-mvp-2026-05-21/implementation.md
-summary: Todo 实体类型 + 读写 localStorage 的纯函数模块
-created_at: 2026-05-21T05:55:19Z
+summary: 实现 useTodos 状态 hook，暴露 todos 数组与 add/toggle/edit/remove 四个 action，内部自动持久化
+created_at: 2026-05-21T06:00:00Z
 
 type: implementation
-subtask_id: 2
+subtask_id: 3
 ---
 
 ## Subtask 1: 创建 todo app 脚手架
@@ -41,5 +41,18 @@ subtask_id: 2
 
 - 跑过的命令与结果：
   - `pnpm -F todo typecheck` → pass
+
+- 未做但 acceptance 提到的项：无
+
+## Subtask 3: 实现 useTodos 状态 hook
+
+- 改动文件：
+  - `apps/todo/src/useTodos.ts` —— 导出 `useTodos()` hook，内部维护 `todos` state（初始值从 `loadTodos()` 水合），暴露 `add` / `toggle` / `edit` / `remove` 四个 action，每个 action 修改 state 后调用 `saveTodos()` 持久化
+
+- 与 design 的偏差及原因：无
+
+- 跑过的命令与结果：
+  - `pnpm -F todo typecheck` → pass
+  - `pnpm -F todo lint` → pass
 
 - 未做但 acceptance 提到的项：无
