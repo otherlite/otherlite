@@ -64,16 +64,41 @@ retry_rounds:
 
 ## 子任务拆分
 
-设计完成后**必须**拆成尽量多、尽量小的 developer 子任务（initial: `subtasks`；retry: `retry_rounds[N].subtasks`）。理由：developer 用低级模型，任务越简单越不易错。
+设计完成后**必须**拆成尽量多、尽量小的 developer 子任务（initial: `subtasks`；retry: `retry_rounds[N].subtasks`）。理由：developer 用低级模型（Haiku / MiniMax 等），任务越简单越不易错。
 
-**拆分原则：**
-- **小**：1-3 个文件，一两段说清楚做什么
+**颗粒度铁律（违反必拆）：**
+- **文件数 ≤ 3**：超过强制拆
+- **单一交付物**：一个函数 / 一个路由 / 一个组件 / 一张表的 migration / 一个 zod schema —— 多于一个强制拆
+- **不跨 layer**：API + DB + UI 同时改 → 拆成串行 subtask（先 DB，再 API，再 UI）
+- **title 不含"并且 / 同时 / 以及 / 还有"**：连接两个动词就是两件事，拆
+
+**零设计决策（dev 不做判断）：**
+
+弱模型一旦需要"自己想"就掉链子。架构师必须把 dev 所需的所有信息 **inline 写进 subtask 的 `summary`，或 design.md 中可直接引用的段落**：
+
+- 函数签名（参数名 / 类型 / 返回值 / 抛出的错误）
+- 类型定义、字段名、约束
+- 错误码 / 状态码 / 异常分支
+- 文件路径、目录位置、导出名
+- 命名（变量 / 函数 / 类型 / 路由 path）
+- 第三方库的版本与 API 调用方式（涉及 SDK 时）
+
+subtask 描述里**禁止**出现 "决定..." / "选择..." / "可以..." / "根据情况..." / "合适的..." 等留白措辞 —— 这些都是把决策甩给 dev，必须由架构师当场敲定。
+
+**其他原则：**
 - **独立**：每个 subtask 完成后整个仓库可单独 typecheck（不留半截类型给下游收尾）
 - **有序**：initial `id` int 从 1 起严格递增；retry `id` `retry-{round}.{index}`，index 从 1 起递增；A 提供 B 依赖 → A.id < B.id
 - **覆盖**：design 提及（或 blockers 列出）的所有工作都有 subtask
 - **不重叠**：两个 subtask 不写同一文件的同一段
 
-**每项字段**：`id` / `title`（≤ 30 字）/ `files`（数组）/ `summary`（≤ 50 字）/ `acceptance`（客观完成判断，developer 自检用）。
+**每项字段**：`id` / `title`（≤ 30 字）/ `files`（数组）/ `summary`（≤ 50 字 —— 装不下签名/类型时写 "见 design.md §X"，由该段承载细节）/ `acceptance`。
+
+**`acceptance` 必须是可机器判定的客观信号**，二选一：
+
+- 可跑的命令 —— 例：`pnpm test path/to/foo.test.ts` / `pnpm typecheck`
+- 可观察的输入→输出 —— 例：`POST /foo body={x:1} → 201 with {id, x:1}`
+
+禁止 "实现 X 功能" / "完成 Y 模块" / "代码质量好" 这类无法判定的措辞。
 
 ## 产出落盘
 
@@ -134,6 +159,9 @@ HITL 模式下**初始 + Retry 两类都要做**：落盘后向用户询问"通�
 
 - [ ] 业务字段齐（type / affects_docs / status / subtasks / retry_rounds）
 - [ ] verdict = needs_user_decision ⇒ blockers 非空
+- [ ] 每个 subtask（含 retry）满足颗粒度铁律：文件数 ≤ 3 / 单一交付物 / 不跨 layer / title 无并联动词
+- [ ] 每个 subtask 已 inline 所有签名 + 类型 + 文件路径 + 命名（直接写或经 design.md 引用段承载），dev 无需做任何设计判断
+- [ ] 每个 subtask 的 `acceptance` 是可跑命令或可观察输入→输出，禁模糊措辞
 
 **仅初始模式**
 
