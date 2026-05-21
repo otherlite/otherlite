@@ -41,7 +41,8 @@ git / worktree 操作全部封装在 `.claude/scripts/ulw-*.sh`，主会话只�
 ## 调用机制
 
 - **TeamCreate**：`team_name="ulw-{slug}"`，主会话 = team lead；结束 `TeamDelete`
-- **Agent 输入**：`Agent({...})` prompt 前置 JSON（必填 `task_slug / mode / inputs / outputs_required`）。developer 子任务额外带 `subtask`；architect retry 额外带 `retry_round`。schema 见 `docs/templates/agent-contract.md`
+- **Agent 必须作为 teammate 调起**（非游离 subagent）：`Agent({...})` 必带 `team_name` + `name`。漏 `name` 会启动游离 subagent，不进 team → idle/Task 信号断裂，pipeline 卡死
+- **Agent 输入**：prompt 前置 JSON（必填 `task_slug / mode / inputs / outputs_required`）。developer 子任务额外带 `subtask`；architect retry 额外带 `retry_round`。schema 见 `docs/templates/agent-contract.md`
 - **完成信号**：主会话靠两条信号判定 agent 完成 ——（1）cmux 自动发的 `idle_notification`，（2）`docs/specs/{slug}/{outputs_required}` 落盘文件的 frontmatter `verdict`。**agent 禁用 `SendMessage` 传业务内容**；详见 `agent-contract.md` §通信模型
 - **状态持久化**：teammate 不跨 session 存活；产出全落 `docs/specs/{slug}/`，session 断也能基于文件续跑
 - **teammate 不直接通信**：跨 agent 协作经主会话；下游读上游落盘文件（见 `agent-contract.md`）
