@@ -91,7 +91,7 @@ git / worktree 操作全部封装在 `.claude/scripts/ulw-*.sh`，主会话只�
 | ✅ | ✅ | 缺失 / 非枚举值 | 视为该 agent 的"阻塞类" verdict（如 `analyst.needs_more_info` / `developer.blocked` / `qa.fail` 等），按 mode 处理 |
 | ✅ | ❌ | — | 同上（视为阻塞 + agent 没落盘） |
 
-决策表见 `docs/templates/agent-contract.md` §通信模型；本节后续两个 mode 表只列正常 verdict 的处理。
+完整通信模型见 `docs/templates/agent-contract.md` §通信模型。本节后续两个 mode 表只列**正常 verdict** 的处理 —— "阻塞类" verdict / 文件缺失走上表回归到对应 mode。
 
 ### HITL 模式
 
@@ -172,6 +172,9 @@ worktree 永不自动删除。用户手动：
 bash .claude/scripts/ulw-cleanup.sh {slug}                  # 删 worktree，保留分支
 bash .claude/scripts/ulw-cleanup.sh {slug} --delete-branch  # 同删本地分支
 bash .claude/scripts/ulw-list.sh                            # 列当前所有 ulw worktree
+bash .claude/scripts/ulw-close-panes.sh {slug}              # 关本次任务残留 cmux pane（halt 后手动场景）
 ```
 
 worktree 目录残留但 git 状态未清：`git worktree prune`。
+
+节点 8 正常跑完会自动调 `ulw-close-panes.sh`；中途 halt / 崩溃留下的 pane 用户手动清。

@@ -8,7 +8,7 @@ model: opus
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/templates/design-doc.md` —— 段落顺序、取舍分析格式、subtasks / retry_rounds 字段、项目特定约定
 - 涉及现有架构再读 `docs/architecture/*.md`
 
@@ -28,7 +28,7 @@ model: opus
 6. 改动现有系统 → 写迁移路径
 7. 多方案 → design-doc 强制格式列出 + 标推荐
 8. **拆 subtasks**（见下）写 frontmatter
-9. self-commit
+9. self-commit 后结束
 
 ### Retry 模式（`retry_round ≥ 1`）
 
@@ -57,7 +57,7 @@ retry_rounds:
 ```
 
 5. 主体顶部 Changelog 加 `{date} · round-{N} retry planning · 基于 qa/review/security blockers 拆 {M} 项`
-6. self-commit（消息 `[ulw] 2-architect: round {N} retry planning`）
+6. self-commit（消息 `[ulw] 2-architect: round {N} retry planning`）后结束
 7. verdict：
    - `ready_for_impl` —— retry subtasks 已产出
    - `needs_user_decision` —— blockers 指向根本设计错（不是实施 bug），retry subtasks 无法救；autopilot 会替你选推荐但应如实抛出

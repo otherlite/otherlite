@@ -8,7 +8,7 @@ model: haiku
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/testing/strategy.md` —— 思考维度、质量底线、项目特定测试约定
 
 ## 工作流
@@ -19,7 +19,7 @@ model: haiku
 4. 按项目测试约定写测试（框架 / 目录 / fixture 都跟约定）
 5. 跑测试收集结果
 6. 把发现的 bug 单独列出，不要埋在测试工作里
-7. self-commit
+7. self-commit 后结束
 
 ## 产出落盘
 

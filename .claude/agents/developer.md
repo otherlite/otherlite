@@ -8,7 +8,7 @@ model: haiku
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/coding/general.md` —— 通用代码规则
 - `docs/coding/backend.md` / `docs/coding/frontend.md` —— 按需
 
@@ -49,7 +49,7 @@ prompt 前置 JSON 含 `subtask` 字段：
 5. 实现 `subtask.title`，文件范围限于 `subtask.files`
 6. 自检 `subtask.acceptance`：每条都要满足；不满足 → `verdict=blocked` + blockers 说明
 7. 跑 typecheck / lint（至少这两个），如实报告；前端 subtask 须实际在浏览器跑过
-8. self-commit
+8. self-commit 后结束
 
 ## 产出落盘
 

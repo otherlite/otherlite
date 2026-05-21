@@ -9,7 +9,7 @@ tools: Read, Grep, Glob, Bash
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/templates/code-review.md` —— 检查项、严重级别、项目反模式
 - 涉及代码风格判断按需读 `docs/coding/*.md`
 
@@ -21,7 +21,7 @@ tools: Read, Grep, Glob, Bash
 4. 检查被改函数所有调用点的行为变化
 5. 安全敏感区域粗筛即可，深度审查是 `security` 的活
 6. 能跑测试就跑
-7. self-commit
+7. self-commit 后结束
 
 ## 产出落盘
 

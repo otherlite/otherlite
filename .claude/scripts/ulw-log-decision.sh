@@ -7,10 +7,10 @@
 #   slug      —— 任务 slug
 #   node      —— 节点序号（1-7）
 #   agent     —— agent 名（如 analyst / architect / developer-2 / qa / reviewer / security / wiki-curator）
-#   verdict   —— agent 返回的原始 verdict
+#   verdict   —— agent 落盘 frontmatter 的 verdict
 #   decision  —— 主会话决定（一句话）
 #   reason    —— 决定的理由（一句话）
-#   blockers  —— 可选，agent 给出的 blockers 摘要（多条用 "；" 分隔）
+#   blockers  —— 可选，agent frontmatter blockers 摘要（多条用 "；" 分隔）
 #
 # 例：
 #   bash .claude/scripts/ulw-log-decision.sh tiered-pricing-2026-05-21 4 qa fail \

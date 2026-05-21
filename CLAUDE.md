@@ -12,9 +12,6 @@
 - 文件路径纯文本（禁 Markdown 自动链接）
 - 非核心参数缺失 → 用项目默认值，不报错
 
-**工具调用 —— 回复**
-- 直接以 JSON 对象开头，不加前缀废话
-
 **工具调用 —— `SendMessage`**
 - **ulw pipeline 内禁用**：业务 verdict / blockers / 任务结果一律走 frontmatter 落盘。主会话靠 `idle_notification`（cmux 平台自动）+ 文件 frontmatter 双信号判定完成。详见 `docs/templates/agent-contract.md` §通信模型
 - 该工具仅为平台协议保留（`shutdown_request` / `shutdown_response` / `plan_approval_response`）。收到此类协议消息时按既有平台约定回，其余场景一律不调

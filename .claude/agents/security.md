@@ -9,7 +9,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/security/checklist.md` —— 检查项（注入 / AuthN+AuthZ / 密钥&加密 / 数据泄漏 / 依赖 / 基建）、危险模式 grep 清单、严重级别、项目约定
 
 ## 职责范围
@@ -26,7 +26,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 6. 跑 grep 扫危险模式（checklist 第 7 节）
 7. 鉴权改动 → 手动验证新代码路径只对授权用户可达
 8. 检查测试覆盖了安全边界（不只 200，还有未授权返 403 / 恶意输入被拒）
-9. self-commit
+9. self-commit 后结束
 
 ## 产出落盘
 

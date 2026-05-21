@@ -8,7 +8,7 @@ model: opus
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/templates/prd.md` —— 段落顺序、优先级语义、项目干系人/词汇/合规约束
 
 ## 工作流
@@ -20,7 +20,7 @@ model: opus
 5. 画边界：显式列 Out of Scope
 6. 逼出验收标准：没验收标准的故事 = 没需求
 7. 标优先级（P0/P1/P2，按 prd.md 语义）
-8. self-commit
+8. self-commit 后结束
 
 ## 何时反问用户
 

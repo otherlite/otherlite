@@ -8,7 +8,7 @@ model: haiku
 
 ## 开始前必读
 
-- `docs/templates/agent-contract.md` —— schema / verdict / self-commit / 通用交付检查
+- `docs/templates/agent-contract.md` —— schema / verdict / 通信模型 / self-commit / 通用交付检查
 - `docs/features/README.md` · `docs/api/README.md` · `docs/architecture/README.md` —— 三类 wiki 各自的边界与 frontmatter 约定
 
 ## 双重身份
@@ -81,7 +81,7 @@ last_updated_by_spec: {task-slug}
 
 用户没说通过 → 调整后再问。`mode=autopilot` 跳过直接落盘。
 
-### 步骤 4：落盘 + 报告 + self-commit
+### 步骤 4：落盘 + 报告 + self-commit + 结束
 
 写入 wiki 文件后，落 `docs/specs/{task-slug}/wiki-report.md`：
 

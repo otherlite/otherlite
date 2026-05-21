@@ -22,9 +22,11 @@ domain: templates
 
 | idle 收到 | 文件存在 | verdict 枚举 | 主会话动作 |
 |---|---|---|---|
-| ✅ | ✅ | 在该 agent 枚举内 | 按 verdict 走（pass/fail/blocked 等） |
-| ✅ | ✅ | 缺失 / 非枚举值 | 视为 `blocked`，按 mode 处理（HITL halt，autopilot 进 §自纠错循环或记 log） |
-| ✅ | ❌ | — | 视为 `blocked`（agent 没落盘就停了），同上 |
+| ✅ | ✅ | 在该 agent 枚举内 | 按 verdict 走下一步 |
+| ✅ | ✅ | 缺失 / 非枚举值 | 视为该 agent 的"阻塞类" verdict（analyst→`needs_more_info` / architect→`needs_user_decision` / developer→`blocked` / qa→`fail` / reviewer→`request_changes` / security→`cannot_merge` / wiki-curator→`needs_human_review`），按 mode 处理 |
+| ✅ | ❌ | — | 同上（agent 没落盘就停了） |
+
+mode 具体处理见 `.claude/commands/ulw.md` §异常处理。
 
 **禁止调用 `SendMessage` 工具传业务 verdict / blockers / 中间产物**。该工具仅保留给平台协议（`shutdown_*` / `plan_approval_response`），ulw pipeline 全程不触发。
 
@@ -195,8 +197,7 @@ commit 之后 agent **直接结束**，不再调用任何工具（不发 SendMes
 2. **blockers 数组每一项必须是可执行的单句**。例：`"登录处缺 rate-limit"` ✅；`"代码质量整体可以提升"` ❌。
 3. **summary 是给用户看的**，主会话汇报时直接复制。
 4. **artifact_path 必须与实际落盘路径一致**。
-5. **self-commit 是 agent 责任，且必须是 idle 前最后一步**。落盘 → commit → 结束三步缺一不可，期间不调任何额外工具。
-6. **禁止调 SendMessage 传业务内容**。该工具在 ulw pipeline 内不被使用。
+5. **self-commit 是 agent 责任，且必须是 idle 前最后一步**。落盘 → commit → 结束三步缺一不可，期间不调 SendMessage / 不输出额外文本。
 
 ## Agent 之间不直接通信
 
