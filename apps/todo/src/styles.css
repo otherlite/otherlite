@@ -1,0 +1,138 @@
+/* ── Screen-reader only ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── App layout ── */
+.todo-app {
+  max-width: 480px;
+  margin: 48px auto;
+  padding: 0 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+}
+
+.todo-app__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+/* ── Input row ── */
+.todo-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.todo-input-row input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+}
+
+.todo-input-row input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.todo-input-row button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  background: #4a90d9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.todo-input-row button:hover {
+  background: #357abd;
+}
+
+.todo-input-row button:active {
+  background: #2a5f9e;
+}
+
+/* ── Todo list ── */
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.todo-list__item + .todo-list__item {
+  border-top: 1px solid #eee;
+}
+
+/* ── Todo item ── */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.todo-item__checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.todo-item__text {
+  flex: 1;
+  cursor: default;
+  line-height: 1.5;
+}
+
+.todo-item--completed .todo-item__text {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo-item__edit-input {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 1rem;
+  border: 1px solid #4a90d9;
+  border-radius: 4px;
+  outline: none;
+}
+
+.todo-item__delete {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.todo-item__delete:hover {
+  opacity: 1;
+}
+
+/* ── Empty state ── */
+.todo-empty-state {
+  text-align: center;
+  color: #999;
+  padding: 48px 0;
+  font-size: 1rem;
+}

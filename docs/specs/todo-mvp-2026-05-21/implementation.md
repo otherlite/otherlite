@@ -1,14 +1,14 @@
 ---
-agent: developer-3
+agent: developer-4
 task_slug: todo-mvp-2026-05-21
 verdict: implementation_complete
 blockers: []
 artifact_path: docs/specs/todo-mvp-2026-05-21/implementation.md
-summary: 实现 useTodos 状态 hook，暴露 todos 数组与 add/toggle/edit/remove 四个 action，内部自动持久化
-created_at: 2026-05-21T06:00:00Z
+summary: 实现 UI 组件并组装 App，含受控输入 / 双击编辑 / 勾选删除 / 空态 / 原生 CSS
+created_at: 2026-05-21T06:10:00Z
 
 type: implementation
-subtask_id: 3
+subtask_id: 4
 ---
 
 ## Subtask 1: 创建 todo app 脚手架
@@ -53,6 +53,26 @@ subtask_id: 3
 
 - 跑过的命令与结果：
   - `pnpm -F todo typecheck` → pass
+  - `pnpm -F todo lint` → pass
+
+- 未做但 acceptance 提到的项：无
+
+## Subtask 4: 实现 UI 组件并组装 App
+
+- 改动文件：
+  - `apps/todo/src/components/TodoInput.tsx` —— 受控文本框 + 提交按钮，Enter 或点击按钮触发 onAdd，空白忽略，提交后清空
+  - `apps/todo/src/components/TodoItem.tsx` —— checkbox（toggle）+ 文本显示（双击进入编辑模式，blur/Enter 保存，Esc 取消）+ 删除按钮；完成项添加 `data-completed` 属性与删除线样式
+  - `apps/todo/src/components/TodoList.tsx` —— 遍历 todos 渲染 TodoItem，列表为空时显示 EmptyState
+  - `apps/todo/src/components/EmptyState.tsx` —— 显示「还没有待办，加一条试试」
+  - `apps/todo/src/App.tsx` —— 调用 useTodos hook，组合 TodoInput + TodoList
+  - `apps/todo/src/main.tsx` —— 引入 `styles.css`
+  - `apps/todo/src/styles.css` —— 原生 CSS 样式：sr-only 实用类、布局、输入行、列表、待办项（完成删除线）、编辑态、删除按钮、空态
+
+- 与 design 的偏差及原因：无
+
+- 跑过的命令与结果：
+  - `pnpm -F todo typecheck` → pass
+  - `pnpm -F todo build` → pass（vite v6.4.2, 34 modules transformed）
   - `pnpm -F todo lint` → pass
 
 - 未做但 acceptance 提到的项：无
